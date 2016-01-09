@@ -1,0 +1,23 @@
+OASISFormat:    0.3
+Name:           nac
+Version:        0.1
+Synopsis:       Network anomaly classification tool.
+Authors:        Johan Mazel.
+License:        GPL
+BuildType:      ocamlbuild(0.4)
+
+Executable      Anomaly_Classication
+        Path:                   src
+        MainIs:                 nac.ml
+        CompiledObject:         native
+        BuildDepends:           itv-tree,
+                                admd,
+
+                                netralys_trace_parsing,netralys_packet_data,netralys_flow,
+                                netralys_metrics,netralys_attribute_value,
+
+                                nac_lib, nac_taxonomy
+
+        BuildTools:             ocamlbuild
+        NativeOpt:              -S -inline 20 -nodynlink
+
