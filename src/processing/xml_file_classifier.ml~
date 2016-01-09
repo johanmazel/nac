@@ -1,0 +1,245 @@
+
+open Printf
+
+open Admd_functor_declaration
+open Mawilab_admd_functor_declaration
+open Mawilab_mod_admd_functor_declaration
+
+open Maps
+
+let debug_enabled = ref true
+
+let set_debug bool = debug_enabled := bool
+
+let debug fmt =
+  Printf.kprintf
+    (
+      if !debug_enabled then
+	(fun s -> Format.printf "[Xml_file_classifier]: %s@." s)
+      else
+	ignore
+    )
+    fmt
+
+let process
+    anomaly_taxonomy
+
+    export_metrics_attributes
+
+    xml_file_basename_no_extension
+    mawilab_admd_file
+    mawilab_mod_anomaly_description_int_map
+    =
+  (
+    debug "process: classification";
+    
+    let anomaly_container = mawilab_admd_file.Mawilab_admd.File.anomaly_container in
+
+    let anomaly_list = anomaly_container.Mawilab_admd.Anomaly_container.anomaly_list in
+    
+    let anomaly_int_map =
+      List.fold_left
+        (fun int_map anomaly ->
+	  (
+	    Int_map.add
+	      anomaly.Mawilab_admd.Anomaly.indice
+	      anomaly
+	      int_map
+	  )
+        )
+        Int_map.empty
+        anomaly_list
+    in
+    
+    let anomaly_taxonomy_manager =
+      Anomaly_taxonomy_manager.of_anomaly_taxonomy
+	anomaly_taxonomy
+    in
+
+    let ple_int_map =
+      Execution_time_measure.execute
+        "[Xml_file_classifier]: process: classifying anomalies"
+        (fun _ ->
+          Int_map.mapi
+	    (fun indice _ ->
+	      (
+		let mawilab_mod_anomaly_description =
+		  Int_map.find
+	            indice
+		    mawilab_mod_anomaly_description_int_map
+	        in
+
+		let detailed_metrics_string =
+		  mawilab_mod_anomaly_description.Mawilab_mod_anomaly_description.detailed_metrics_string
+		in
+
+		let network_attributes =
+		  mawilab_mod_anomaly_description.Mawilab_mod_anomaly_description.network_attributes
+		in
+
+		let anomaly_string =
+		  (Mawilab_admd.Anomaly.to_string
+                     To_string_mode.Simple
+                     (Int_map.find
+	                indice
+	                anomaly_int_map
+	             )
+                  )
+		  ^ "\n\n" ^ detailed_metrics_string
+		in
+
+	        (Int_map.find
+	           indice
+	           anomaly_int_map
+	        )
+		  ,
+	        mawilab_mod_anomaly_description
+	          ,
+	        Anomaly_taxonomy_manager.classify
+	          anomaly_taxonomy_manager
+                  anomaly_string
+	          network_attributes
+	      )
+	    )
+	    anomaly_int_map
+        )
+    in
+    
+    (* debug *)
+    (*   "process: signatures:\n%s" *)
+    (*   (to_string_int_map *)
+    (*      ~first: "" *)
+    (*      ~last: "" *)
+    (*      ~sep: "\n\n" *)
+    (*      ~sep_key_value: ": " *)
+    (*      string_of_int *)
+    (*      (fun (anomaly , detailed_metrics , network_attributes, anomaly_signature) -> *)
+    (*        sprintf *)
+    (*          "%s\n%s\n\n%s\n%s" *)
+    (*          (Mawilab_admd.Anomaly.to_string To_string_mode.Simple anomaly) *)
+    (*          (Detailed_metrics.to_string To_string_mode.Simple detailed_metrics) *)
+    (*          (Network_attributes.to_string To_string_mode.Normal network_attributes) *)
+    (*          (Anomaly_signature.to_string To_string_mode.Command anomaly_signature) *)
+    (*      ) *)
+    (*      anomaly_network_attributes_anomaly_signature_tuple_int_map *)
+    (*   ) *)
+    (* ; *)
+    
+    let mawilab_anomaly_mod_int_map =
+      Int_map.map
+        (fun
+	  (
+	    mawilab_anomaly,
+	    mawilab_admd_mod_description,
+	    anomaly_signature
+	  )
+	->
+	  (
+	    let mawilab_anomaly_value = mawilab_anomaly.Mawilab_admd.Anomaly.anomaly_value in
+	    
+	    let mawilab_anomaly_mod_value =
+	      Mawilab_mod_anomaly_value.new_t
+		mawilab_anomaly_value.Mawilab_anomaly_value.distance_to_normal
+		mawilab_anomaly_value.Mawilab_anomaly_value.distance_to_abnormal
+		
+		mawilab_anomaly_value.Mawilab_anomaly_value.heuristic_detailed_anomaly_type
+		
+		mawilab_anomaly_value.Mawilab_anomaly_value.mawilab_detector_detection_result
+		
+		anomaly_signature
+	    in
+	    
+	    let description_option = Some (mawilab_admd_mod_description) in
+
+	    Mawilab_mod_admd.Anomaly.new_t
+	      mawilab_anomaly.Mawilab_admd.Anomaly.indice
+	      mawilab_anomaly.Mawilab_admd.Anomaly.date
+	      
+	      mawilab_anomaly.Mawilab_admd.Anomaly.anomaly_type
+
+	      mawilab_anomaly_mod_value
+	      description_option
+
+	      mawilab_anomaly.Mawilab_admd.Anomaly.slice_list
+	      
+	      mawilab_anomaly.Mawilab_admd.Anomaly.start_time
+	      mawilab_anomaly.Mawilab_admd.Anomaly.end_time
+	  )
+	)
+	ple_int_map
+    in
+
+    let mawilab_anomaly_mod_list =
+      List.map
+	snd
+	(Int_map.bindings
+	   mawilab_anomaly_mod_int_map
+	)
+    in
+
+    let mawilab_anomaly_mod_container =
+      Mawilab_mod_admd.Anomaly_container.new_t
+	mawilab_anomaly_mod_list
+    in
+
+    let attributes_metadata_string =
+      Sexplib.Sexp.to_string
+	(Attribute_name_container.sexp_of_t
+	   (Network_attributes.generate_attribute_name_container
+	      ()
+	   )
+	)
+    in
+
+    let analysis =
+      match mawilab_admd_file.Mawilab_admd.File.analysis_option with
+      | None -> 
+	Analysis.new_t
+	  attributes_metadata_string
+	  ""
+	  ""
+	  ""
+      | Some analysis ->
+	Analysis.new_t
+	  (analysis.Analysis.description 
+	   ^ "--" ^ attributes_metadata_string)
+	  ""
+	  ""
+	  ""
+    in
+
+    let mawilab_anomaly_mod_file_filename =
+      xml_file_basename_no_extension ^ "_cl.xml"
+    in
+
+    debug 
+      "process: xml_file_basename_no_extension/mawilab_anomaly_mod_file:\n%s\n%s" 
+      xml_file_basename_no_extension
+      mawilab_anomaly_mod_file_filename;
+
+    let mawilab_anomaly_mod_file =
+      Mawilab_mod_admd.File.new_t
+	mawilab_anomaly_mod_file_filename
+	mawilab_admd_file.Mawilab_admd.File.date
+	
+	mawilab_admd_file.Mawilab_admd.File.algorithm_option
+	(
+	  match export_metrics_attributes with
+	  | false -> mawilab_admd_file.Mawilab_admd.File.analysis_option
+	  | true -> Some analysis
+	)
+	mawilab_admd_file.Mawilab_admd.File.dataset_option
+	
+	mawilab_anomaly_mod_container
+    in
+
+    Mawilab_mod_admd.File.to_filename
+      (
+	match export_metrics_attributes with
+	| false -> To_string_mode.Command
+	| true -> To_string_mode.Simple
+      )
+      mawilab_anomaly_mod_file;
+
+    mawilab_anomaly_mod_file
+  )

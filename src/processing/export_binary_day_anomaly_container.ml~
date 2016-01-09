@@ -1,0 +1,25 @@
+
+
+let process l =
+let day_anomaly_container =
+Day_anomaly_container.new_t
+anomalous_suspicious_mawilab_base_for_xml_classification_admd_file.Mawilab_base_for_xml_classification_admd.File.time
+
+              (Mawilab_base_for_binary_classification_admd.Anomaly_container.new_t
+	         
+              )
+          in
+
+          let basename = Filename.basename trace_file_path in
+          let prefix =
+            try
+              Filename.chop_extension basename
+            with
+            | Invalid_argument string ->
+              basename
+          in
+
+          Day_anomaly_container.to_file_prefix
+            day_anomaly_container
+            prefix
+          ;

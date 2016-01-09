@@ -1,0 +1,7 @@
+
+open Printf
+
+type t =
+| Not_defined
+| Trace of string
+| Xml of Xml_attribute_building_mode.t

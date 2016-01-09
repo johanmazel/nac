@@ -1,0 +1,55 @@
+
+true: warn_error_A
+
+<src/**/*.ml{,i}>: package(itv-tree)
+<src/**/*.ml{,i}>: package(nac_lib,nac_taxonomy)
+
+<src/**/*.ml{,i}>: thread
+<src/**/*.ml{,i}>: annot
+
+<src/**>: include
+
+<src/**/*.ml>: syntax(camlp4o)
+<src/**/*.ml>: package(comparelib.syntax,sexplib.syntax,bin_prot.syntax)
+
+<src/**/nac.native>: thread
+
+
+# OASIS_START
+# DO NOT EDIT (digest: 5dc1a7531247c93da92d2fc9d5338d8c)
+# Ignore VCS directories, you can use the same kind of rule outside
+# OASIS_START/STOP if you want to exclude directories that contains
+# useless stuff for the build process
+true: annot, bin_annot
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Executable Anomaly_Classication
+"src/nac.native": oasis_executable_anomaly_classication_native
+<src/*.ml{,i,y}>: oasis_executable_anomaly_classication_native
+"src/nac.native": pkg_admd
+"src/nac.native": pkg_itv-tree
+"src/nac.native": pkg_nac_lib
+"src/nac.native": pkg_nac_taxonomy
+"src/nac.native": pkg_netralys_attribute_value
+"src/nac.native": pkg_netralys_flow
+"src/nac.native": pkg_netralys_metrics
+"src/nac.native": pkg_netralys_packet_data
+"src/nac.native": pkg_netralys_trace_parsing
+<src/*.ml{,i,y}>: pkg_admd
+<src/*.ml{,i,y}>: pkg_itv-tree
+<src/*.ml{,i,y}>: pkg_nac_lib
+<src/*.ml{,i,y}>: pkg_nac_taxonomy
+<src/*.ml{,i,y}>: pkg_netralys_attribute_value
+<src/*.ml{,i,y}>: pkg_netralys_flow
+<src/*.ml{,i,y}>: pkg_netralys_metrics
+<src/*.ml{,i,y}>: pkg_netralys_packet_data
+<src/*.ml{,i,y}>: pkg_netralys_trace_parsing
+# OASIS_STOP

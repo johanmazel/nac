@@ -1,0 +1,59 @@
+
+module L = BatList
+
+open Map_ext_instantiations
+
+let process 
+    (* date_format_string *)
+    (* ?default_hour_minute_second *)
+    (* time_format_string *)
+
+    parallelization_mode
+
+    xml_file_path
+  =
+  let mawilab_admd_file =
+    Admd.Instantiation.Base.File.of_filename
+      false
+
+      (* date_format_string *)
+      (* ?default_hour_minute_second *)
+      (* time_format_string    *)   
+
+      parallelization_mode
+
+      xml_file_path
+  in
+
+  let anomaly_container = mawilab_admd_file.Admd.Instantiation.Base.File.anomaly_container in
+
+  let xml_file_basename = Filename.basename xml_file_path in
+  let xml_file_basename_no_extension = Filename.chop_extension xml_file_basename in
+
+  (* let l = *)
+  (*   L.map *)
+  (*     (fun anomaly -> *)
+  (*        let initial_description_string = *)
+  (*          match anomaly.Admd.Instantiation.Base.Anomaly.anomaly_description_option with *)
+  (*          | None -> "" *)
+  (*          | Some description -> Admd.Instantiation.Base_description.to_string description *)
+  (*        in *)
+  (*        anomaly.Admd.Instantiation.Base.Anomaly.indice, *)
+  (*        initial_description_string *)
+  (*     ) *)
+  (*     (Admd.Instantiation.Base.Anomaly_container.to_list *)
+  (*        anomaly_container *)
+  (*     ) *)
+  (* in *)
+  (* let intial_description_int_map = *)
+  (*   Int_map.of_list *)
+  (*     l *)
+  (* in *)
+
+  (* TODO: remove xml_file_basename_no_extension *)
+  (
+    xml_file_basename_no_extension,
+    mawilab_admd_file,
+    anomaly_container
+    (* intial_description_int_map *)
+  )

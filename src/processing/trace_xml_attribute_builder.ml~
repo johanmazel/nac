@@ -1,0 +1,455 @@
+
+open Printf
+
+open Admd_functor_declaration
+open Mawilab_admd_functor_declaration
+open Mawilab_mod_admd_functor_declaration
+
+open Maps
+
+open Traffic_flow_aggr_data_functor_declarations
+
+module Five_tuple_flow_set = struct
+  include Set.Make(Five_tuple_flow)
+
+  let of_list = List.fold_left (fun acc x -> add x acc) empty
+  let to_list = elements
+
+  let to_string
+      ?sep: (sep = " ")
+      t
+      =
+    let list = elements t in
+    
+    Utils_batteries.to_string_list
+      ~sep
+      (fun value  -> Five_tuple_flow.to_string value)
+      list
+
+end
+
+let debug_enabled = ref true
+
+let set_debug bool = debug_enabled := bool
+
+let debug fmt =
+  Printf.kprintf
+    (
+      if !debug_enabled then
+	(fun s -> Format.printf "[Trace_xml_attribute_builder]: %s@." s)
+      else
+	ignore
+    )
+    fmt
+
+let five_tuple_flow_count
+      packet_parsing_mode
+      pcap_loop
+      trace_handler
+  =
+  (
+    let set_ref = ref Five_tuple_flow_set.empty in
+
+    Execution_time_measure.execute
+      "[Attribute_builder]: five_tuple_flow_count: "
+      (fun _ ->
+       let packet_processing_function pcap_header pcap_payload =
+         (* Melange_wrapper.launch_function_on_header_ipv4 *)
+         (*   (fun header ipv4_pdu -> *)
+         (*     let packet_data_for_metrics = *)
+         (*       Packet_data_for_metrics.of_melange_ipv4 *)
+	 (*         pcap_header *)
+	 (*         ipv4_pdu *)
+         (*     in *)
+
+         (*     let five_tuple_flow =  *)
+         (*       Five_tuple_flow.of_packet_data_for_metrics *)
+	 (*         packet_data_for_metrics *)
+         (*     in *)
+
+         (*     set_ref := Five_tuple_flow_set.add five_tuple_flow !set_ref; *)
+         (*   ) *)
+	 (*   pcap_header *)
+	 (*   pcap_payload *)
+         Melange_wrapper.launch_function_on_header_ethernet
+           (fun header ethernet_pdu ->
+            let packet_data_for_metrics =
+              Packet_data_for_metrics.of_melange_ethernet
+		packet_parsing_mode
+	        pcap_header
+	        ethernet_pdu
+            in
+
+            let five_tuple_flow = 
+              Five_tuple_flow.of_packet_data_for_metrics
+	        packet_data_for_metrics
+            in
+
+            set_ref := Five_tuple_flow_set.add five_tuple_flow !set_ref;
+           )
+	   pcap_header
+	   pcap_payload
+       in
+
+       Trace_handler.launch_analysis
+         pcap_loop
+         trace_handler
+	 packet_processing_function
+      );
+
+    Five_tuple_flow_set.cardinal !set_ref
+  )
+
+let get_trace_data_ple
+      packet_parsing_mode
+      trace_file_path
+      filter_criteria_list
+  =
+  debug "get_trace_data_ple: call";
+
+  let trace_statistics, five_tuple_flow_metrics_container =
+    Trace_five_tuple_flow_builder.process
+      packet_parsing_mode
+      trace_file_path
+  in
+
+  debug "get_trace_data_ple: building five_tuple_key_container";
+  let five_tuple_key_container = Five_tuple_key_container.of_filter_criteria_list filter_criteria_list in
+
+  (* debug "process: filtering five_tuple_flow_metrics_container"; *)
+  let five_tuple_flow_metrics_container_filtered =
+    Execution_time_measure.execute
+      "[Trace_xml_attribute_builder]: get_trace_data_ple: filtering five_tuple_flow_metrics_container"
+      (fun _ ->
+       Five_tuple_flow_metrics_container.filteri
+	 (fun five_tuple_flow _ ->
+	  Five_tuple_key_container.mem_any five_tuple_flow five_tuple_key_container
+	 )
+	 five_tuple_flow_metrics_container
+      )
+  in
+
+  debug 
+    "get_trace_data_ple: five_tuple_flow_metrics_container reduced from %d to %d elements"
+    (Five_tuple_flow_metrics_container.length five_tuple_flow_metrics_container)
+    (Five_tuple_flow_metrics_container.length five_tuple_flow_metrics_container_filtered);
+
+  let five_tuple_key_five_tuple_flow_set_container =
+    Execution_time_measure.execute
+      "[Trace_xml_attribute_builder]: get_trace_data_ple: building five_tuple_key_five_tuple_flow_set_container"
+      (fun _ ->
+       Five_tuple_key_five_tuple_flow_set_container.of_five_tuple_flow_metrics_container
+	 five_tuple_flow_metrics_container_filtered
+      )
+  in
+
+  debug "get_trace_data_ple: end";
+
+  trace_statistics
+  , five_tuple_flow_metrics_container_filtered
+  , five_tuple_key_five_tuple_flow_set_container
+
+let get_anomaly_detailed_metrics
+      parallelization_mode
+
+      five_tuple_flow_metrics_container
+      five_tuple_key_five_tuple_flow_set_container
+
+      anomaly_container
+  =
+  debug "get_anomaly_detailed_metrics: call";
+
+  debug "get_anomaly_detailed_metrics: adding detailed_metrics to anomalies";
+
+  let anomaly_detailed_metrics_container =
+    Execution_time_measure.execute
+      "[Trace_xml_attribute_builder]: process: adding detailed metrics to anomalies"
+      (fun _ ->
+       (* Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container_parallelized_list_fusion_map *)
+       Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container
+         parallelization_mode
+
+         five_tuple_flow_metrics_container
+	 five_tuple_key_five_tuple_flow_set_container
+
+         anomaly_container
+      )
+  in
+
+  debug "get_anomaly_detailed_metrics: end";
+
+  anomaly_detailed_metrics_container
+
+let get_int_map
+      trace_statistics
+      anomaly_detailed_metrics_container 
+
+      anomaly_container
+  =
+  debug "get_int_map: call";
+
+  debug "get_int_map: generating network_attributes";
+
+  let anomaly_network_attributes_container =
+    Execution_time_measure.execute
+      "[Trace_xml_attribute_builder]: process: building attributes"
+      (fun _ ->
+       Anomaly_network_attributes_container.of_trace_statistics_anomaly_detailed_metrics_container
+	 trace_statistics
+         anomaly_detailed_metrics_container
+      )
+  in
+
+  let anomaly_list = Base_admd.Anomaly_container.to_list anomaly_container in
+  let anomaly_int_map =
+    List.fold_left
+      (fun int_map anomaly ->
+       (
+         Int_map.add
+           anomaly.Base_admd.Anomaly.indice
+           anomaly
+           int_map
+       )
+      )
+      Int_map.empty
+      anomaly_list
+  in
+  let initial_description_string_int_map : string Int_map.t =
+    Int_map.map
+      (fun mawilab_anomaly ->
+
+       match mawilab_anomaly.Base_admd.Anomaly.anomaly_description_option with
+       | None -> ""
+       | Some string -> string
+      )
+      anomaly_int_map
+  in
+
+  debug "get_int_map: generating detailed_metrics_string";
+
+  let detailed_metrics_string_int_map =
+    Anomaly_detailed_metrics_container.fold_detailed_metrics
+      (fun indice detailed_metrics int_map ->
+       Int_map.add
+         indice
+	 (Detailed_metrics.to_string To_string_mode.Simple detailed_metrics)
+         int_map
+      )
+      anomaly_detailed_metrics_container
+      Int_map.empty
+  in
+
+  debug "get_int_map: generating anomaly_raw_data";
+  let anomaly_raw_data_int_map =
+    Anomaly_detailed_metrics_container.fold_detailed_metrics
+      (fun indice detailed_metrics int_map ->
+       Int_map.add
+         indice
+	 (Anomaly_raw_data.of_detailed_metrics detailed_metrics)
+         int_map
+      )
+      anomaly_detailed_metrics_container
+      Int_map.empty
+  in
+
+  debug "get_int_map: generating Mawilab_mod_anomaly_description";
+  let mawilab_admd_mod_description_int_map =
+    Int_map.mapi
+      (fun indice initial_description_string ->
+       let anomaly_raw_data = Int_map.find indice anomaly_raw_data_int_map in
+       Mawilab_mod_anomaly_description.new_t
+	 initial_description_string
+	 (Int_map.find indice detailed_metrics_string_int_map)
+	 (Anomaly_detailed_metrics_container.find_anomaly_metric 
+	    indice 
+	    anomaly_detailed_metrics_container)
+	 (Anomaly_network_attributes_container.find indice anomaly_network_attributes_container)
+	 anomaly_raw_data.Anomaly_raw_data.anomaly_ip_address
+      )
+      initial_description_string_int_map
+  in
+
+  (* let xml_file_basename = Filename.basename xml_file_path in *)
+  (* let xml_file_basename_no_extension = Filename.chop_extension xml_file_basename in *)
+
+  debug "get_int_map: end";
+  
+  mawilab_admd_mod_description_int_map
+  , anomaly_raw_data_int_map
+      
+
+let process
+      parallelization_mode
+
+      (* five_tuple_flow_metrics_container *)
+      (* five_tuple_key_five_tuple_flow_set_container *)
+      trace_file_path
+      filter_criteria_list
+
+      date_format_string
+
+      (* detector_container_file_name *)
+      (* detector_setting_container_file_name *)
+
+      (* trace_statistics *)
+      anomaly_container
+  =
+  (
+    debug "process: call";
+
+    let trace_statistics, five_tuple_flow_metrics_container =
+      Trace_five_tuple_flow_builder.process
+	trace_file_path
+    in
+
+    debug "process: building five_tuple_key_container";
+    let five_tuple_key_container = Five_tuple_key_container.of_filter_criteria_list filter_criteria_list in
+
+    (* debug "process: filtering five_tuple_flow_metrics_container"; *)
+    let five_tuple_flow_metrics_container_filtered =
+      Execution_time_measure.execute
+	"[Xml_classifier]: process: filtering five_tuple_flow_metrics_container"
+	(fun _ ->
+	 Five_tuple_flow_metrics_container.filteri
+	   (fun five_tuple_flow _ ->
+	    Five_tuple_key_container.mem_any five_tuple_flow five_tuple_key_container
+	   )
+	   five_tuple_flow_metrics_container
+	)
+    in
+
+    debug 
+      "process: five_tuple_flow_metrics_container reduced from %d to %d elements"
+      (Five_tuple_flow_metrics_container.length five_tuple_flow_metrics_container)
+      (Five_tuple_flow_metrics_container.length five_tuple_flow_metrics_container_filtered);
+
+    let five_tuple_key_five_tuple_flow_set_container =
+      Execution_time_measure.execute
+	"[Xml_classifier]: process: building five_tuple_key_five_tuple_flow_set_container"
+	(fun _ ->
+	 Five_tuple_key_five_tuple_flow_set_container.of_five_tuple_flow_metrics_container
+	   five_tuple_flow_metrics_container_filtered
+	)
+    in
+
+    debug "process: adding detailed_metrics to anomalies";
+
+    let anomaly_detailed_metrics_container =
+      Execution_time_measure.execute
+        "[Trace_xml_attribute_builder]: process: adding detailed metrics to anomalies"
+        (fun _ ->
+         (* Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container_parallelized_list_fusion_map *)
+         Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container
+           parallelization_mode
+
+           five_tuple_flow_metrics_container
+	   five_tuple_key_five_tuple_flow_set_container
+
+           anomaly_container
+        )
+    in
+
+    Execution_time_measure.execute
+      "[Trace_xml_attribute_builder]: process: GCing"
+      (fun _ ->
+       Gc.full_major ()
+      );
+
+    debug "process: generating network_attributes";
+
+    (* debug *)
+    (*   "process: anomaly_detailed_metrics_container:\n%s" *)
+    (*   (Anomaly_detailed_metrics_container.to_string *)
+    (*      To_string_mode.Simple *)
+    (*      anomaly_detailed_metrics_container); *)
+
+    let anomaly_network_attributes_container =
+      Execution_time_measure.execute
+        "[Trace_xml_attribute_builder]: process: building attributes"
+        (fun _ ->
+         Anomaly_network_attributes_container.of_trace_statistics_anomaly_detailed_metrics_container
+	   trace_statistics
+           anomaly_detailed_metrics_container
+        )
+    in
+
+    let anomaly_list = Base_admd.Anomaly_container.to_list anomaly_container in
+    let anomaly_int_map =
+      List.fold_left
+        (fun int_map anomaly ->
+         (
+           Int_map.add
+             anomaly.Base_admd.Anomaly.indice
+             anomaly
+             int_map
+         )
+        )
+        Int_map.empty
+        anomaly_list
+    in
+    let initial_description_string_int_map : string Int_map.t =
+      Int_map.map
+	(fun mawilab_anomaly ->
+
+	 match mawilab_anomaly.Base_admd.Anomaly.anomaly_description_option with
+	 | None -> ""
+	 | Some string -> string
+	)
+	anomaly_int_map
+    in
+
+    debug "process: generating detailed_metrics_string";
+
+    let detailed_metrics_string_int_map =
+      Anomaly_detailed_metrics_container.fold_detailed_metrics
+        (fun indice detailed_metrics int_map ->
+         Int_map.add
+           indice
+	   (Detailed_metrics.to_string To_string_mode.Simple detailed_metrics)
+           int_map
+        )
+        anomaly_detailed_metrics_container
+        Int_map.empty
+    in
+
+    debug "process: generating anomaly_raw_data";
+    let anomaly_raw_data_int_map =
+      Anomaly_detailed_metrics_container.fold_detailed_metrics
+        (fun indice detailed_metrics int_map ->
+         Int_map.add
+           indice
+	   (Anomaly_raw_data.of_detailed_metrics detailed_metrics)
+           int_map
+        )
+        anomaly_detailed_metrics_container
+        Int_map.empty
+    in
+
+    debug "process: generating Mawilab_mod_anomaly_description";
+    let mawilab_admd_mod_description_int_map =
+      Int_map.mapi
+        (fun indice initial_description_string ->
+	 let anomaly_raw_data = Int_map.find indice anomaly_raw_data_int_map in
+	 Mawilab_mod_anomaly_description.new_t
+	   initial_description_string
+	   (Int_map.find indice detailed_metrics_string_int_map)
+	   (Anomaly_detailed_metrics_container.find_anomaly_metric 
+	      indice 
+	      anomaly_detailed_metrics_container)
+	   (Anomaly_network_attributes_container.find indice anomaly_network_attributes_container)
+	   anomaly_raw_data.Anomaly_raw_data.anomaly_ip_address
+        )
+	initial_description_string_int_map
+    in
+
+    (* let xml_file_basename = Filename.basename xml_file_path in *)
+    (* let xml_file_basename_no_extension = Filename.chop_extension xml_file_basename in *)
+
+    (
+      (* xml_file_basename_no_extension, *)
+      (* mawilab_admd_file, *)
+      mawilab_admd_mod_description_int_map,
+      (* anomaly_detailed_metrics_container, *)
+      anomaly_raw_data_int_map
+    )   
+  )

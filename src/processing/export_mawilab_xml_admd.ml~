@@ -1,0 +1,89 @@
+
+open Printf
+    
+module L = BatList
+  
+open Mawilab_for_xml_classification_admd_declaration
+open Mawilab_for_binary_classification_admd_declaration
+
+
+let map_to_anomaly
+    (
+      indice,
+      date,
+      time,
+
+      anomaly_type,
+      base_value,
+
+      anomaly_metric,
+      network_traffic_attributes, network_traffic_values,
+
+      anomaly_raw_data,
+
+      slice_list,
+
+      start_time,
+      end_time
+    )
+  =
+  let mawilab_description_for_binary_classification =
+    Mawilab_description_for_binary_classification.new_t
+      anomaly_metric
+      network_traffic_attributes
+      network_traffic_values
+
+      anomaly_raw_data.Anomaly_raw_data.anomaly_ip_address
+      anomaly_raw_data.Anomaly_raw_data.anomaly_port
+  in
+
+  let anomaly =
+    (* Mawilab_admd_binary_base.Mawilab_anomaly.new_t *)
+    Mawilab_base_for_binary_classification_admd.Anomaly.new_t
+      indice
+
+      date
+      time
+
+      anomaly_type
+      base_value
+      (Some mawilab_description_for_binary_classification)
+
+      slice_list
+
+      start_time
+      end_time
+  in
+
+  (* Mawilab_anomaly.Classification_base_binary anomaly *)
+  anomaly
+	  
+
+let process basename time data_l =
+  let anomaly_l =
+    L.map
+      map_to_anomaly
+      data_l
+  in
+
+  let day_anomaly_container =
+    Day_anomaly_container.new_t
+      time
+
+      (Mawilab_base_for_binary_classification_admd.Anomaly_container.new_t
+         anomaly_l
+      )
+  in
+
+  let prefix =
+    try
+      Filename.chop_extension basename
+    with
+    | Invalid_argument string ->
+      basename
+  in
+
+  Day_anomaly_container.to_file_prefix
+    day_anomaly_container
+    prefix
+  ;
