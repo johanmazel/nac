@@ -58,6 +58,8 @@ sudo apt-get install libgsl-dev
 ## Tool compilation
 
 ```unix
+opam install itv-tree
+
 make
 ```
 
