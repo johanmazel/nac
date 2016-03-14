@@ -342,6 +342,7 @@ let process
           )
         ->
         (
+          (* TODO: ask processing of timestamps *)
           print_endline "Xml_classifier: process: extracting from trace and xml";
 
           let

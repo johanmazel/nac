@@ -695,8 +695,10 @@ let of_anomaly_five_tuple_flow_metrics_container
     in
 
     debug "of_anomaly_five_tuple_flow_metrics_container: end";
-
+    
     t
+    
+    (* failwith("BUG"); *)
   )
   
 let to_list_detailed_metrics t =
