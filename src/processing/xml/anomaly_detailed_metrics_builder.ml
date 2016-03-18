@@ -29,13 +29,15 @@ let debug fmt =
     )
     fmt
 
-let process_no_timestamp
+let process_no_timestamp__
     parallelization_mode
 
     packet_parsing_mode
     trace_file_path
 
     anomaly_container
+    anomaly_slice_time_data_container
+    
     filter_criteria_list
   =
   (
@@ -58,6 +60,7 @@ let process_no_timestamp
         five_tuple_key_five_tuple_flow_set_container
 
         anomaly_container
+        anomaly_slice_time_data_container
     in
 
     assert(
@@ -75,14 +78,36 @@ let process_timestamp
     packet_parsing_mode
     trace_file_path
 
-    anomaly_container
+    anomaly_container_
+    anomaly_slice_time_data_container
   =
   (
     debug "process_timestamp: call";
 
+    (* let five_tuple_flow_element_anomaly_indice_container_ref = *)
+    (*   Five_tuple_flow_element_anomaly_indice_container_ref.of_anomaly_container *)
+    (*     anomaly_container *)
+    (* in *)
+
+    (* let anomaly_data_list = *)
+    (*   L.map *)
+    (*     (fun anomaly -> *)
+    (*        anomaly.Base.Anomaly.indice, *)
+    (*        anomaly.Base.Anomaly.slice_list, *)
+    (*        anomaly.Base.Anomaly.start_time, *)
+    (*        anomaly.Base.Anomaly.end_time *)
+    (*     ) *)
+    (*     anomaly_container.Base.Anomaly_container.anomaly_list *)
+    (* in *)
+
+    let anomaly_data_list =
+      Anomaly_slice_time_data_container.to_list
+        anomaly_slice_time_data_container
+    in
+
     let five_tuple_flow_element_anomaly_indice_container =
-      Five_tuple_flow_element_anomaly_indice_container.of_anomaly_container
-        anomaly_container
+      Five_tuple_flow_element_anomaly_indice_container.of_anomaly_data_list
+        anomaly_data_list
     in
 
     (* debug *)
@@ -92,28 +117,34 @@ let process_timestamp
     (*   ) *)
     (* ; *)
 
-    assert(
-      Base.Anomaly_container.length anomaly_container
-      =
-      HT.length five_tuple_flow_element_anomaly_indice_container.Five_tuple_flow_element_anomaly_indice_container.anomaly_h
-    );
+    (* assert( *)
+    (*   Base.Anomaly_container.length anomaly_container *)
+    (*   = *)
+    (*   HT.length five_tuple_flow_element_anomaly_indice_container_ref.Five_tuple_flow_element_anomaly_indice_container_ref.anomaly_h *)
+    (* ); *)
+    (* assert( *)
+    (*   Base.Anomaly_container.length anomaly_container *)
+    (*   = *)
+    (*   Five_tuple_flow_element_anomaly_indice_container.length five_tuple_flow_element_anomaly_indice_container *)
+    (* ); *)
 
     let trace_statistics, anomaly_five_tuple_flow_metrics_container =
       Trace_anomaly_five_tuple_flow_metrics_container_builder.process
         match_timestamps
+        (* five_tuple_flow_element_anomaly_indice_container_ref *)
         five_tuple_flow_element_anomaly_indice_container
 
         packet_parsing_mode
         trace_file_path
     in
-    
+
     (* debug *)
     (*   "process_timestamp: :\n%s" *)
     (*   (Anomaly_five_tuple_flow_metrics_container.to_string *)
     (*      anomaly_five_tuple_flow_metrics_container *)
     (*   ) *)
     (* ; *)
-    
+
     (* if *)
     (*   Base.Anomaly_container.length anomaly_container *)
     (*   <> *)
@@ -130,12 +161,15 @@ let process_timestamp
 
     let anomaly_detailed_metrics_container =
       Anomaly_detailed_metrics_container.of_anomaly_five_tuple_flow_metrics_container
-        anomaly_container
+        anomaly_container_
+        anomaly_slice_time_data_container
+
         anomaly_five_tuple_flow_metrics_container
     in
 
     if
-      Base.Anomaly_container.length anomaly_container
+      (* Base.Anomaly_container.length anomaly_container *)
+      (Anomaly_slice_time_data_container.length anomaly_slice_time_data_container)
       <>
       Anomaly_detailed_metrics_container.length anomaly_detailed_metrics_container
     then
@@ -143,7 +177,8 @@ let process_timestamp
         failwith
           (sprintf
              "process_timestamp: inconsistent length between anomaly_container (%d) and anomaly_five_tuple_flow_metrics_container %d"
-             (Base.Anomaly_container.length anomaly_container)
+             (* (Base.Anomaly_container.length anomaly_container) *)
+             (Anomaly_slice_time_data_container.length anomaly_slice_time_data_container)
              (Anomaly_detailed_metrics_container.length anomaly_detailed_metrics_container)
           )
       );
@@ -163,10 +198,13 @@ let process
     parallelization_mode
 
     packet_parsing_mode
+    match_timestamps
+
     trace_file_path
 
-    anomaly_container
     filter_criteria_list
+    anomaly_container
+    anomaly_slice_time_data_container
   =
   (
     debug "process: call";
@@ -184,13 +222,14 @@ let process
 
     let trace_statistics, anomaly_detailed_metrics_container =
       process_timestamp
-        true
+        match_timestamps
         (* parallelization_mode *)
 
         packet_parsing_mode
         trace_file_path
 
         anomaly_container
+        anomaly_slice_time_data_container
     in
 
     debug "process: end";

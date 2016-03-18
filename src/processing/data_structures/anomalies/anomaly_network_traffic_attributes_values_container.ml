@@ -14,9 +14,9 @@ let debug fmt =
   Printf.kprintf
     (
       if !debug_enabled then
-  (fun s -> Format.printf "[Anomaly_detailed_metrics_container]: %s@." s)
+        (fun s -> Format.printf "[Anomaly_detailed_metrics_container]: %s@." s)
       else
-  ignore
+        ignore
     )
     fmt
 

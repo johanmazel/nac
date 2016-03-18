@@ -1,0 +1,184 @@
+
+open Printf
+
+module L = List_ext
+(* module HT = BatHashtbl *)
+
+let debug_enabled = ref false
+
+let set_debug bool = debug_enabled := bool
+
+let debug fmt =
+  Printf.kprintf
+    (
+      if !debug_enabled then
+        (fun s -> Format.printf "[Five_tuple_flow_anomaly_indice_manager]: %s@." s)
+      else
+        ignore
+    )
+    fmt
+
+let get_indice
+    match_timestamps
+
+    five_tuple_flow_anomaly_indice_container
+    five_tuple_flow_element_anomaly_indice_container
+
+    five_tuple_flow
+    timestamp_sec
+    timestamp_usec
+  =
+  (
+    (* debug "get_indice: call"; *)
+    
+    let anomaly_indice_list =
+      try
+        (
+          let l =
+            Five_tuple_flow_anomaly_indice_container.find
+              five_tuple_flow_anomaly_indice_container
+
+              match_timestamps          
+
+              five_tuple_flow
+              (float_of_int timestamp_sec)
+          in
+
+          (* debug *)
+          (*   "get_indice: found (length %d): %s" *)
+          (*   (L.length l) *)
+          (*   (L.to_string *)
+          (*      ~sep: "\n" *)
+          (*      string_of_int *)
+          (*      (L.sort compare l) *)
+          (*   ); *)
+
+          (* debug *)
+          (*   "get_indice: found in:\n%s" *)
+          (*   (Five_tuple_flow_anomaly_indice_container.to_string *)
+          (*      five_tuple_flow_anomaly_indice_container *)
+          (*   ); *)
+
+          l
+        )
+      with
+      | Not_found ->
+        (
+          (* debug *)
+          (*   "get_indice: not found in five_tuple_flow_anomaly_indice_container:\n%s" *)
+          (*   (Five_tuple_flow_anomaly_indice_container.to_string *)
+          (*      five_tuple_flow_anomaly_indice_container *)
+          (*   ); *)
+
+          (* debug "get_indice: getting data from five_tuple_flow_element_anomaly_indice_container"; *)
+          
+          let anomaly_data_list_to_add =
+            Five_tuple_flow_element_anomaly_indice_container.get_anomaly_indice_list
+              match_timestamps
+              five_tuple_flow_element_anomaly_indice_container
+
+              five_tuple_flow
+          in
+
+          (* debug "get_indice: mapping l"; *)
+          
+          let anomaly_indice_list_to_add =
+            L.map
+              (fun (indice, _, _, _) ->
+                 indice
+              )
+              anomaly_data_list_to_add
+          in
+
+          (* debug *)
+          (*   "get_indice: anomaly_indice_list to add: %s" *)
+          (*   (L.to_string *)
+          (*      ~sep: " " *)
+          (*      string_of_int *)
+          (*      (L.sort compare anomaly_indice_list_to_add) *)
+          (*   ); *)
+
+          let l_result =
+            if L.length anomaly_indice_list_to_add = 0 then
+              []
+            else
+              (
+                L.iter
+                  (fun (indice, slice_l, start_time, end_time) ->
+                     (* let indice = anomaly.Admd.Instantiation.Base.Anomaly.indice in *)
+
+                     Five_tuple_flow_anomaly_indice_container.add
+                       five_tuple_flow_anomaly_indice_container
+
+                       five_tuple_flow
+
+                       (* (float_of_int anomaly.Admd.Instantiation.Base.Anomaly.start_time) *)
+                       (* (float_of_int anomaly.Admd.Instantiation.Base.Anomaly.end_time) *)
+                       (float_of_int start_time)
+                       (float_of_int end_time)
+                       indice
+                     ;
+                  )
+                  anomaly_data_list_to_add;
+
+                (* debug *)
+                (*   "get_indice: new five_tuple_flow_anomaly_indice_container:\n%s" *)
+                (*   (Five_tuple_flow_anomaly_indice_container.to_string *)
+                (*      five_tuple_flow_anomaly_indice_container *)
+                (*   ); *)
+
+                (* debug "get_indice: getting new l"; *)
+                
+                let anomaly_indice_list =
+                  try
+                    (
+                      let anomaly_indice_list =
+                        Five_tuple_flow_anomaly_indice_container.find
+                          five_tuple_flow_anomaly_indice_container
+
+                          match_timestamps                      
+
+                          five_tuple_flow
+                          (float_of_int timestamp_sec)
+                      in
+
+                      anomaly_indice_list
+                    )
+                  with
+                  | Not_found ->
+                    (
+                      print_endline
+                        (sprintf
+                           "[Five_tuple_flow_anomaly_indice_manager]: get_indice: could not find five_tuple_flow: %s at %d.%d !!!!!!!!!!!!!!!!!"
+                           (Five_tuple_flow.to_string five_tuple_flow)
+                           timestamp_sec
+                           timestamp_usec
+                        );
+                      (* TODO: check why not stop for assert(fasle) in callbackinterval *)
+                      assert(false)
+                    )
+                in
+
+                anomaly_indice_list
+              )
+          in
+
+          (* debug "get_indice: returning l"; *)
+          
+          l_result 
+
+          (* assert(false); *)
+        )
+    in
+
+    let r =
+    if L.length anomaly_indice_list = 0 then
+      raise Not_found
+    else
+      anomaly_indice_list
+    in
+    
+    (* debug "get_indice: end"; *)
+
+    r
+  )

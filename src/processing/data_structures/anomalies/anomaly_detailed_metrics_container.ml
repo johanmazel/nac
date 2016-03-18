@@ -5,7 +5,7 @@ module A = BatArray
 module L = BatList
 module S = BatString
 module HT = BatHashtbl
-
+    
 open Map_ext_instantiations
 
 open Admd.Instantiation
@@ -50,30 +50,23 @@ let to_string to_string_mode t =
     ~to_string_key: (fun key -> sprintf "%d" key)
     (fun detailed_metrics -> Detailed_metrics.to_string detailed_metrics)
     t.detailed_metrics_h
-  (* match to_string_mode with *)
-  (* | To_string_mode.Command -> *)
-  (*   Utils_batteries.to_string_hashtbl *)
-  (*     ~sep_element: "\n\n" *)
-  (*     ~sep_key_value: ": " *)
-  (*     ~to_string_key: (fun key -> sprintf "%d" key) *)
-  (*     (fun detailed_metrics -> Detailed_metrics.to_string detailed_metrics) *)
-  (*     t.detailed_metrics_h *)
-  (* | To_string_mode.Simple -> *)
-  (*   Utils_batteries.to_string_hashtbl *)
-  (*     ~sep_element: "\n\n" *)
-  (*     ~sep_key_value: ": " *)
-  (*     ~to_string_key: (fun key -> sprintf "%d" key) *)
-  (*     (fun detailed_metrics -> Detailed_metrics.to_string detailed_metrics) *)
-  (*     t.detailed_metrics_h *)
-  (* | To_string_mode.Normal -> *)
-  (*   Utils_batteries.to_string_hashtbl *)
-  (*     ~sep_element: "\n\n" *)
-  (*     ~sep_key_value: ": " *)
-  (*     ~to_string_key: (fun key -> sprintf "%d" key) *)
-  (*     (fun detailed_metrics -> Detailed_metrics.to_string detailed_metrics) *)
-  (*     t.detailed_metrics_h *)
 
 let length t = Hashtbl.length t.detailed_metrics_h
+
+let filter_indice f t =
+  new_t
+    (HT.filteri
+       (fun key _ ->
+          f key
+       )
+       t.detailed_metrics_h
+    )
+    (HT.filteri
+       (fun key _ ->
+          f key
+       )
+       t.anomaly_metric_h
+    )
 
 let find_detailed_metrics indice t = Hashtbl.find t.detailed_metrics_h indice 
 let find_anomaly_metric indice t = Hashtbl.find t.anomaly_metric_h indice 
@@ -81,25 +74,114 @@ let find_anomaly_metric indice t = Hashtbl.find t.anomaly_metric_h indice
 let fold_detailed_metrics f t acc = Hashtbl.fold f t.detailed_metrics_h acc
 let fold_anomaly_metric f t acc = Hashtbl.fold f t.anomaly_metric_h acc
 
+let to_list t =
+  (
+    let h =
+      Core_kernel.Core_int.Map.merge
+        (Core_kernel.Core_int.Map.of_alist_exn
+           (L.of_enum
+              (HT.enum
+                 t.detailed_metrics_h
+              )
+           )
+        )
+        (Core_kernel.Core_int.Map.of_alist_exn
+           (L.of_enum
+              (HT.enum
+                 t.anomaly_metric_h
+              )
+           )
+        )
+        (fun ~key: indice data ->
+           match data with
+           | `Left _ ->
+             failwith
+               (sprintf
+                  "[Anomaly_detailed_metrics_container]: to_list: only detailed_metrics for %d"
+                  indice
+               )
+           | `Right _ ->
+             failwith
+               (sprintf
+                  "[Anomaly_detailed_metrics_container]: to_list: only detailed_metrics for %d"
+                  indice
+               )
+           | `Both (detailed_metrics, anomaly_metric) ->
+             Some (detailed_metrics, anomaly_metric)
+        )
+    in
+
+    Core_kernel.Core_int.Map.to_alist
+      h
+  )
+    
+let of_list l =
+  new_t
+    (HT.of_enum
+       (L.enum
+          (L.map (fun (i, tuple) -> i, fst tuple) l)
+       )
+    )
+    (HT.of_enum
+       (L.enum
+          (L.map (fun (i, tuple) -> i, snd tuple) l)
+       )
+    )
+  
+let to_list_detailed_metrics t =
+  L.of_enum
+    (HT.enum
+       t.detailed_metrics_h
+    )
+     
+let to_list_anomaly_metric t =
+  L.of_enum
+    (HT.enum
+       t.anomaly_metric_h
+    )
+     
 let of_hashtables
     get_five_tuple_flow_metric_f
     five_tuple_flow_count_hashtable______
 
-    anomaly_container
+    anomaly_container__
+    anomaly_slice_time_data_container
 
     five_tuple_flow_set_detailed_metrics_tuple_hashtable
   =
   debug "of_hashtables: call";
 
   (* Completing metrics for anomalies with empty traffic *)
-  Base.Anomaly_container.iter
-    (fun anomaly ->
+  (* Base.Anomaly_container.iter *)
+  (*   (fun anomaly -> *)
+  (*      try *)
+  (*        ( *)
+  (*          let _detailed_metrics_found = *)
+  (*            Hashtbl.find *)
+  (*              five_tuple_flow_set_detailed_metrics_tuple_hashtable  *)
+  (*              anomaly.Base.Anomaly.indice *)
+  (*          in *)
+
+  (*          () *)
+  (*        ) *)
+  (*      with *)
+  (*      | Not_found -> *)
+  (*        ( *)
+  (*          Hashtbl.add *)
+  (*            five_tuple_flow_set_detailed_metrics_tuple_hashtable *)
+  (*            anomaly.Base.Anomaly.indice  *)
+  (*            (Five_tuple_flow_data_structures.Five_tuple_flow_hashset.empty, Detailed_metrics.new_empty_t ()) *)
+  (*        ) *)
+  (*   ) *)
+  (*   anomaly_container; *)
+  Anomaly_slice_time_data_container.iter
+    (fun indice _ ->
        try
          (
            let _detailed_metrics_found =
              Hashtbl.find
                five_tuple_flow_set_detailed_metrics_tuple_hashtable 
-               anomaly.Base.Anomaly.indice
+               indice
            in
 
            ()
@@ -109,14 +191,16 @@ let of_hashtables
          (
            Hashtbl.add
              five_tuple_flow_set_detailed_metrics_tuple_hashtable
-             anomaly.Base.Anomaly.indice 
+             indice 
              (Five_tuple_flow_data_structures.Five_tuple_flow_hashset.empty, Detailed_metrics.new_empty_t ())
          )
     )
-    anomaly_container;
+    anomaly_slice_time_data_container;
+  
 
   assert(
-    Base.Anomaly_container.length anomaly_container
+    (* Base.Anomaly_container.length anomaly_container *)
+     Anomaly_slice_time_data_container.length anomaly_slice_time_data_container
     =
     HT.length five_tuple_flow_set_detailed_metrics_tuple_hashtable
   );
@@ -222,6 +306,7 @@ let of_anomaly_container_five_tuple_flow_metrics_container
     five_tuple_key_five_tuple_flow_set_container
 
     anomaly_container
+    anomaly_slice_time_data_container
   =
   (
     debug "of_anomaly_container_five_tuple_flow_metrics_container: call";
@@ -562,7 +647,8 @@ let of_anomaly_container_five_tuple_flow_metrics_container
         five_tuple_flow_count_hashtable
 
         anomaly_container
-
+        anomaly_slice_time_data_container
+        
         five_tuple_flow_set_detailed_metrics_tuple_hashtable
     in 
     debug "of_anomaly_container_five_tuple_flow_metrics_container: end";
@@ -577,6 +663,8 @@ let of_anomaly_container_five_tuple_flow_metrics_container
 let of_anomaly_five_tuple_flow_metrics_container
 
     anomaly_container
+    anomaly_slice_time_data_container
+    
     anomaly_five_tuple_flow_metrics_container
   =
   (
@@ -691,25 +779,15 @@ let of_anomaly_five_tuple_flow_metrics_container
         (* five_tuple_flow_count_hashtable *)
         ()
         anomaly_container
+        anomaly_slice_time_data_container
+        
         five_tuple_flow_set_detailed_metrics_tuple_hashtable
     in
 
     debug "of_anomaly_five_tuple_flow_metrics_container: end";
-    
+
     t
-    
+
     (* failwith("BUG"); *)
   )
   
-let to_list_detailed_metrics t =
-  L.of_enum
-    (HT.enum
-       t.detailed_metrics_h
-    )
-     
-let to_list_anomaly_metric t =
-  L.of_enum
-    (HT.enum
-       t.anomaly_metric_h
-    )
-     

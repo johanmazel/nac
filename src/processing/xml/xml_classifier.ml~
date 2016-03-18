@@ -117,6 +117,7 @@ let process
     taxonomy_filepath
 
     packet_parsing_mode
+    match_timestamps
 
     export_metrics_attributes
 
@@ -219,36 +220,17 @@ let process
               anomaly_container
           in
 
-          (* let *)
-          (*   trace_statistics, *)
-          (*   five_tuple_flow_metrics_container, *)
-          (*   five_tuple_key_five_tuple_flow_set_container *)
-          (*   = *)
-          (*   Trace_xml_data_builder.get_trace_data_tuple *)
-          (*     packet_parsing_mode *)
-          (*     trace_file_path *)
-          (*     filter_criteria_list *)
-          (* in *)
-
-          (* let anomaly_detailed_metrics_container = *)
-          (*   Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container *)
-          (*     parallelization_mode *)
-
-          (*     five_tuple_flow_metrics_container *)
-          (*     five_tuple_key_five_tuple_flow_set_container *)
-
-          (*     anomaly_container *)
-          (* in *)
-
           let (trace_statistics : Trace_statistics.t), anomaly_detailed_metrics_container =
             Anomaly_detailed_metrics_builder.process
               parallelization_mode
 
               packet_parsing_mode
+              match_timestamps
+              
               trace_file_path
 
-              anomaly_container
               filter_criteria_list
+              anomaly_container
           in
 
           debug

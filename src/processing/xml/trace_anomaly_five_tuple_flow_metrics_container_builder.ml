@@ -50,23 +50,6 @@ let five_tuple_flow_count
       "[Trace_anomaly_five_tuple_flow_metrics_container_builder]: five_tuple_flow_count: "
       (fun _ ->
          let packet_processing_function pcap_header pcap_payload =
-           (* Melange_wrapper.launch_function_on_header_ipv4 *)
-           (*   (fun header ipv4_pdu -> *)
-           (*     let packet_data_for_metrics = *)
-           (*       Packet_data_for_metrics.of_melange_ipv4 *)
-           (*         pcap_header *)
-           (*         ipv4_pdu *)
-           (*     in *)
-
-           (*     let five_tuple_flow =  *)
-           (*       Five_tuple_flow.of_packet_data_for_metrics *)
-           (*         packet_data_for_metrics *)
-           (*     in *)
-
-           (*     set_ref := Five_tuple_flow_set.add five_tuple_flow !set_ref; *)
-           (*   ) *)
-           (*   pcap_header *)
-           (*   pcap_payload *)
            Melange_wrapper.launch_function_on_header_ethernet
              (fun header ethernet_pdu ->
                 let packet_data_for_metrics =
@@ -98,6 +81,7 @@ let five_tuple_flow_count
 
 let process
     match_timestamps
+    (* five_tuple_flow_element_anomaly_indice_container_ref *)
     five_tuple_flow_element_anomaly_indice_container
 
     packet_parsing_mode
@@ -120,6 +104,10 @@ let process
 
     debug "process: building anomaly_five_tuple_flow_metrics_container";
 
+    (* let five_tuple_flow_anomaly_indice_container_ref = *)
+    (*   Five_tuple_flow_anomaly_indice_container_ref.new_empty_t *)
+    (*     0 *)
+    (* in *)
     let five_tuple_flow_anomaly_indice_container =
       Five_tuple_flow_anomaly_indice_container.new_empty_t
         0
@@ -146,6 +134,8 @@ let process
                 Anomaly_five_tuple_flow_metrics_container.add_packet_ethernet
                   match_timestamps
 
+                  (* five_tuple_flow_anomaly_indice_container_ref *)
+                  (* five_tuple_flow_element_anomaly_indice_container_ref *)
                   five_tuple_flow_anomaly_indice_container
                   five_tuple_flow_element_anomaly_indice_container
 

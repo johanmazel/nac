@@ -49,13 +49,13 @@ let process
 
     anomaly_container
   =
-  debug "get_int_map: call";
+  debug "process: call";
 
-  debug "get_int_map: generating network_attributes";
+  debug "process: generating network_attributes";
 
   let anomaly_network_attributes_values_container =
     Execution_time_measure.execute
-      "[Trace_xml_attribute_builder]: process: building attributes"
+      "[Data_hashtable_builder]: process: building attributes"
       (fun _ ->
          Anomaly_network_traffic_attributes_values_container.of_trace_statistics_anomaly_detailed_metrics_container
            trace_statistics
@@ -116,7 +116,7 @@ let process
       )
   in
 
-  debug "get_int_map: generating Mawilab_mod_anomaly_description";
+  debug "process: generating Mawilab_mod_anomaly_description";
   let mawilab_admd_mod_description_h =
     HT.map
       (fun indice initial_description_string ->
@@ -141,7 +141,7 @@ let process
       initial_description_string_h
   in
 
-  debug "get_int_map: generating anomaly_raw_data";
+  debug "process: generating anomaly_raw_data";
   let anomaly_raw_data_int_map =
     Anomaly_detailed_metrics_container.fold_detailed_metrics
       (fun indice detailed_metrics int_map ->
@@ -154,13 +154,13 @@ let process
       Int_map.empty
   in
 
-  debug "get_int_map: end";
+  debug "process: end";
 
   initial_description_string_h,
   detailed_metrics_string_h,
 
   anomaly_network_attributes_values_container,
   anomaly_raw_data_int_map,
-  
+
   mawilab_admd_mod_description_h
   
