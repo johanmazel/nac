@@ -100,87 +100,92 @@ let add_packet_ethernet
     (*   ethernet_pdu *)
     (* in *)
 
-    let five_tuple_flow = 
-      Five_tuple_flow.of_packet_data_for_metrics
-        packet_data_for_metrics
-    in
-
     try
       (
-        let five_tuple_flow_metrics_found =
-          Simple_key_data_container.find
-            t.container
-            five_tuple_flow
-        in
-
-        Five_tuple_flow_metrics.update
-          five_tuple_flow_metrics_found
-          packet_data_for_metrics;
-
-        (* Simple_key_data_container.replace *)
-        (*   t.container *)
-        (*   five_tuple_flow *)
-        (*   data_found *)
-      )
-    with
-    | Not_found ->
-      (
-        (* let new_five_tuple_flow_detailed_metrics = *)
-        (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
-        (*     () *)
-        (* in *)
-
-        (* let packet_timestamp_sec = packet_data_for_metrics.Packet_data_for_metrics.timestamp_sec in *)
-        (* let packet_timestamp_usec = packet_data_for_metrics.Packet_data_for_metrics.timestamp_usec in *)
-
-        (* let new_five_tuple_flow_detailed_metrics = *)
-        (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
-        (*     () *)
-        (* in *)
-
-        (* Five_tuple_flow_detailed_metrics.update *)
-        (*   new_five_tuple_flow_detailed_metrics *)
-        (*   packet_data_for_metrics; *)
-
-        let new_five_tuple_flow_metrics =
-          Five_tuple_flow_metrics.of_packet_data_for_metrics
+        let five_tuple_flow = 
+          Five_tuple_flow.of_packet_data_for_metrics
             packet_data_for_metrics
         in
 
-        (* if *)
-        (*   new_five_tuple_flow_detailed_metrics.Five_tuple_flow_detailed_metrics.nb_packets *)
-        (*   <> *)
-        (*     _new_five_tuple_flow_detailed_metrics.Five_tuple_flow_detailed_metrics.nb_packets *)
-        (* then *)
-        (*   ( *)
-        (*     exit 50 *)
-        (*   ); *)
+        try
+          (
+            let five_tuple_flow_metrics_found =
+              Simple_key_data_container.find
+                t.container
+                five_tuple_flow
+            in
 
-        (* if Five_tuple_flow_detailed_metrics.compare new_detailed_metrics new_t new_five_tuple_flow_detailed_metrics <> 0 then *)
-        (*   exit 30; *)
+            Five_tuple_flow_metrics.update
+              five_tuple_flow_metrics_found
+              packet_data_for_metrics;
 
-        (* let transport_layer_metrics = *)
-        (*   Transport_layer_metrics.of_packet_data_for_metrics *)
-        (*     packet_data_for_metrics *)
-        (* in *)
+            (* Simple_key_data_container.replace *)
+            (*   t.container *)
+            (*   five_tuple_flow *)
+            (*   data_found *)
+          )
+        with
+        | Not_found ->
+          (
+            (* let new_five_tuple_flow_detailed_metrics = *)
+            (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
+            (*     () *)
+            (* in *)
 
-        (* let new_ = *)
-        (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
-        (*     transport_layer_metrics *)
-        (* in *)
+            (* let packet_timestamp_sec = packet_data_for_metrics.Packet_data_for_metrics.timestamp_sec in *)
+            (* let packet_timestamp_usec = packet_data_for_metrics.Packet_data_for_metrics.timestamp_usec in *)
 
-        (* let new_key_simple_data = *)
-        (*   Key_simple_data.new_t *)
-        (*     five_tuple_flow *)
-        (*     new_detailed_metrics *)
-        (* in *)
+            (* let new_five_tuple_flow_detailed_metrics = *)
+            (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
+            (*     () *)
+            (* in *)
 
-        Simple_key_data_container.add
-          t.container
-          five_tuple_flow
-          new_five_tuple_flow_metrics
-      );
+            (* Five_tuple_flow_detailed_metrics.update *)
+            (*   new_five_tuple_flow_detailed_metrics *)
+            (*   packet_data_for_metrics; *)
 
+            let new_five_tuple_flow_metrics =
+              Five_tuple_flow_metrics.of_packet_data_for_metrics
+                packet_data_for_metrics
+            in
+
+            (* if *)
+            (*   new_five_tuple_flow_detailed_metrics.Five_tuple_flow_detailed_metrics.nb_packets *)
+            (*   <> *)
+            (*     _new_five_tuple_flow_detailed_metrics.Five_tuple_flow_detailed_metrics.nb_packets *)
+            (* then *)
+            (*   ( *)
+            (*     exit 50 *)
+            (*   ); *)
+
+            (* if Five_tuple_flow_detailed_metrics.compare new_detailed_metrics new_t new_five_tuple_flow_detailed_metrics <> 0 then *)
+            (*   exit 30; *)
+
+            (* let transport_layer_metrics = *)
+            (*   Transport_layer_metrics.of_packet_data_for_metrics *)
+            (*     packet_data_for_metrics *)
+            (* in *)
+
+            (* let new_ = *)
+            (*   Five_tuple_flow_detailed_metrics.new_empty_t *)
+            (*     transport_layer_metrics *)
+            (* in *)
+
+            (* let new_key_simple_data = *)
+            (*   Key_simple_data.new_t *)
+            (*     five_tuple_flow *)
+            (*     new_detailed_metrics *)
+            (* in *)
+
+            Simple_key_data_container.add
+              t.container
+              five_tuple_flow
+              new_five_tuple_flow_metrics
+          );
+      )
+    with
+    | Five_tuple_flow.Not_IP ->
+      ()
       (* debug "add_packet: end"; *)
   )
 
