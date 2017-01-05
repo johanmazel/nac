@@ -203,7 +203,7 @@ let verify_timestamps
        let time_stamp_error () =
          print_endline
            (sprintf
-              "Anomaly_detailed_metrics_container: of_: flow start is not before flow end: %d.%d >= %d.%d"
+              "Five_tuple_flow_metrics_container: of_: flow start is not before flow end: %d.%d >= %d.%d"
               timestamp_sec_start
               timestamp_usec_start
               timestamp_sec_end
