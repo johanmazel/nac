@@ -9,14 +9,14 @@ true: warn_error_A
 
 <src/**>: include
 
-<src/**/*.ml>: syntax(camlp4o)
-<src/**/*.ml>: package(comparelib.syntax,sexplib.syntax,bin_prot.syntax)
+#<src/**/*.ml>: syntax(camlp4o)
+#<src/**/*.ml>: package(comparelib.syntax,sexplib.syntax,bin_prot.syntax)
 
 <src/**/nac.native>: thread
 
 
 # OASIS_START
-# DO NOT EDIT (digest: 5dc1a7531247c93da92d2fc9d5338d8c)
+# DO NOT EDIT (digest: 0ada3507b0a56941e1310ce9ad1b4243)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -43,6 +43,9 @@ true: annot, bin_annot
 "src/nac.native": pkg_netralys_metrics
 "src/nac.native": pkg_netralys_packet_data
 "src/nac.native": pkg_netralys_trace_parsing
+"src/nac.native": pkg_ppx_bin_prot
+"src/nac.native": pkg_ppx_compare
+"src/nac.native": pkg_ppx_sexp_conv
 <src/*.ml{,i,y}>: pkg_admd
 <src/*.ml{,i,y}>: pkg_itv-tree
 <src/*.ml{,i,y}>: pkg_nac_lib
@@ -52,4 +55,7 @@ true: annot, bin_annot
 <src/*.ml{,i,y}>: pkg_netralys_metrics
 <src/*.ml{,i,y}>: pkg_netralys_packet_data
 <src/*.ml{,i,y}>: pkg_netralys_trace_parsing
+<src/*.ml{,i,y}>: pkg_ppx_bin_prot
+<src/*.ml{,i,y}>: pkg_ppx_compare
+<src/*.ml{,i,y}>: pkg_ppx_sexp_conv
 # OASIS_STOP

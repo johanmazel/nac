@@ -32,7 +32,7 @@ type t =
     dst_port_anomaly_h : (int, Int_set.t) HT.t;
     
     (* anomaly_h : (int, Base.Anomaly.t) HT.t; *)
-    anomaly_data_h : (int, (Admd.Slice.t list * int * int)) HT.t;
+    anomaly_data_h : (int, (Admd.Slice.t list * int * int * int * int)) HT.t;
   }
 
 let new_t
@@ -150,8 +150,8 @@ let of_anomaly_data_list
       HT.of_enum
         (L.enum
            (L.map
-              (fun (anomaly_indice, (admd_indice, slice_list, start_time, end_time)) ->
-                 anomaly_indice, (slice_list, start_time, end_time)
+              (fun (anomaly_indice, (admd_indice, slice_list, start_sec, start_usec, stop_sec, stop_usec)) ->
+                 anomaly_indice, (slice_list, start_sec, start_usec, stop_sec, stop_usec)
               )
               l
            )
@@ -173,7 +173,7 @@ let of_anomaly_data_list
             src_port_anomaly_h_acc,
             dst_port_anomaly_h_acc
           )
-          (anomaly_indice, (_, slice_list, _, _))
+          (anomaly_indice, (_, slice_list, _, _, _, _))
           ->
             (* let anomaly_indice = anomaly.Base.Anomaly.indice in *)
 
@@ -341,12 +341,16 @@ let of_anomaly_data_list
     (* anomaly_h *)
   )
 
-let get_anomaly_indice_list_for_timestamp
-    match_timestamps
+let get_anomaly_data_list_for_timestamp_five_tuple_flow
     t
 
-    timestamp_sec_start
-    timestamp_sec_end
+    match_timestamp
+
+    timestamp_start_sec
+    timestamp_start_usec
+    timestamp_stop_sec
+    timestamp_stop_usec
+
     five_tuple_flow
   =
   (* debug "get_anomaly_indice_list: call"; *)
@@ -428,13 +432,15 @@ let get_anomaly_indice_list_for_timestamp
 
   let anomaly_h_filtered_2 =
     HT.filter
-      (fun (slice_l, start_time, end_time) ->
+      (fun (slice_l, start_sec, start_usec, stop_sec, stop_usec) ->
          Base.Anomaly.match_flow_data
-           timestamp_sec_start
-           0
-           timestamp_sec_end
-           0
-           match_timestamps
+           timestamp_start_sec
+           timestamp_start_usec           
+           timestamp_stop_sec          
+           timestamp_stop_usec
+
+           match_timestamp
+
            (* nb_packets *)
            five_tuple_flow.Five_tuple_flow.src_addr
            five_tuple_flow.Five_tuple_flow.dst_addr
@@ -446,24 +452,30 @@ let get_anomaly_indice_list_for_timestamp
 
            (* anomaly *)
            slice_l
-           start_time
-           end_time
+
+           start_sec
+           start_usec
+           stop_sec
+           stop_usec
       )
       anomaly_h_filtered
   in
 
   (* debug "get_anomaly_indice_list: end"; *)
 
+  (* L.map *)
+  (* snd *)
   L.map
-    snd
+    (fun (i, (slice_l, start_sec, start_usec, stop_sec, stop_usec)) ->
+       i, slice_l, start_sec, start_usec, stop_sec, stop_usec
+    )
     (L.of_enum
        (HT.enum
           anomaly_h_filtered_2
        )
     )
 
-let get_anomaly_indice_list
-    match_timestamps
+let get_anomaly_data_list_for_five_tuple_flow
     t
 
     five_tuple_flow
@@ -570,7 +582,7 @@ let get_anomaly_indice_list
      5-tuple flow. *)
   let anomaly_h_filtered_2 =
     HT.filter
-      (fun (slice_l, start_time, end_time) ->
+      (fun (slice_l, start_sec, start_usec, stop_sec, stop_usec) ->
          Base.Anomaly.match_flow_data
            0
            0
@@ -588,8 +600,10 @@ let get_anomaly_indice_list
 
            (* anomaly *)
            slice_l
-           start_time
-           end_time
+           start_sec
+           start_usec
+           stop_sec
+           stop_usec
       )
       anomaly_h_filtered
   in
@@ -635,8 +649,8 @@ let get_anomaly_indice_list
 
   let l =
     L.map
-      (fun (i, (slice_l, start_time, end_time)) ->
-         i, slice_l, start_time, end_time
+      (fun (i, (slice_l, start_sec, start_usec, stop_sec, stop_usec)) ->
+         i, slice_l, start_sec, start_usec, stop_sec, stop_usec
       )
       (L.of_enum
          (HT.enum

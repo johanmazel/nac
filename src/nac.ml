@@ -19,6 +19,22 @@ let _ =
     Nac_parameters.new_empty_t ()
   in
 
+  let p_flag =
+    Core.Std.Command.Spec.flag
+      "-p"
+      (Core.Std.Command.Spec.optional Core.Std.Command.Spec.int)
+      ~doc: "int Parallel processing with [int] processes"
+  in  
+  let process_p_flag use_int =
+    match use_int with
+    | Some int ->
+      nac_parameters.Nac_parameters.parallelization_mode <-
+        Parallelization_mode.Parmap (int, 1000)
+    | None ->
+      nac_parameters.Nac_parameters.parallelization_mode <-
+        Parallelization_mode.No_parallelization
+  in
+
   let ppm_flag =
     Core.Std.Command.Spec.flag
       "-ppm"
@@ -35,6 +51,34 @@ let _ =
         Packet_parsing_mode.IPV4
   in
 
+  let t_flag =
+    Core.Std.Command.Spec.flag
+      "-t"
+      Core.Std.Command.Spec.no_arg
+      ~doc: " use ADMD timestamps"
+  in
+  let process_t_flag t =
+    match t with
+    | true ->
+      nac_parameters.Nac_parameters.match_timestamps <- true
+    | false ->
+      nac_parameters.Nac_parameters.match_timestamps <- false
+  in
+
+  let atf_flag =
+    Core.Std.Command.Spec.flag
+      "-atf"
+      Core.Std.Command.Spec.no_arg
+      ~doc: " completely analyze trace first (recommended if trace only contain anomalous traffic) (NB: cannot use with -t)"
+  in
+  let process_atf_flag atf =
+    match atf with
+    | true ->
+      nac_parameters.Nac_parameters.build_all_stat <- true
+    | false ->
+      nac_parameters.Nac_parameters.build_all_stat <- false
+  in
+
   let das_flag =
     Core.Std.Command.Spec.flag
       "-das"
@@ -49,36 +93,6 @@ let _ =
       nac_parameters.Nac_parameters.export_values_attributes <- false
   in
 
-  let t_flag =
-    Core.Std.Command.Spec.flag
-      "-t"
-      Core.Std.Command.Spec.no_arg
-      ~doc: " use ADMD timestamps"
-  in
-  let process_t_flag t =
-    match t with
-    | true ->
-      nac_parameters.Nac_parameters.match_timestamps <- true
-    | false ->
-      nac_parameters.Nac_parameters.match_timestamps <- false
-  in
-  
-  let p_flag =
-    Core.Std.Command.Spec.flag
-      "-p"
-      (Core.Std.Command.Spec.optional Core.Std.Command.Spec.int)
-      ~doc: "int Parallel processing with [int] processes"
-  in  
-  let process_p_flag use_int =
-    match use_int with
-    | Some int ->
-      nac_parameters.Nac_parameters.parallelization_mode <-
-        Parallelization_mode.Parmap (int, 10)
-    | None ->
-      nac_parameters.Nac_parameters.parallelization_mode <-
-        Parallelization_mode.No_parallelization
-  in
-  
   let ct =
     Core.Std.Command.basic
       ~summary: "Classify anomaly directly from trace"
@@ -109,19 +123,21 @@ let _ =
       ~summary: "Classify anomaly annotated in [xml_path] located in [trace_path] using [taxonomy_path] from trace"
       Core.Std.Command.Spec.(
         empty
-        +> ppm_flag
-        +> das_flag
-        +> t_flag
         +> p_flag
+        +> ppm_flag
+        +> t_flag
+        +> atf_flag
+        +> das_flag
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
         +> anon ("xml_path" %: string)
       )
-      (fun use_string das t use_int taxonomy_path trace_path xml_path () ->
-         process_ppm_flag use_string;
-         process_das_flag das;
+      (fun p ppm t atf das taxonomy_path trace_path xml_path () ->
+         process_p_flag p;
+         process_ppm_flag ppm;
          process_t_flag t;
-         process_p_flag use_int;
+         process_atf_flag atf;
+         process_das_flag das;
 
          nac_parameters.Nac_parameters.taxonomy_filepath <- taxonomy_path;
 
@@ -136,20 +152,22 @@ let _ =
       ~summary: "Classify anomaly annotated in [mawilab_xml_anomalous_suspicious_path,mawilab_xml_notice_path] located in [trace_path] using [taxonomy_path] from trace"
       Core.Std.Command.Spec.(
         empty
-        +> ppm_flag
-        +> das_flag
-        +> t_flag
         +> p_flag
+        +> ppm_flag
+        +> t_flag
+        +> atf_flag
+        +> das_flag
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
         +> anon ("mawilab_xml_anomalous_suspicious_path" %: string)
         +> anon ("mawilab_xml_notice_path" %: string)
       )
-      (fun use_string das t use_int taxonomy_path trace_path mawilab_xml_anomalous_suspicious_path mawilab_xml_notice_path () ->
-         process_ppm_flag use_string;
-         process_das_flag das;
+      (fun p ppm t atf das taxonomy_path trace_path mawilab_xml_anomalous_suspicious_path mawilab_xml_notice_path () ->
+         process_p_flag p;
+         process_ppm_flag ppm;
          process_t_flag t;
-         process_p_flag use_int;
+         process_atf_flag atf;
+         process_das_flag das;
 
          nac_parameters.Nac_parameters.taxonomy_filepath <- taxonomy_path;
 
@@ -204,6 +222,8 @@ let _ =
 
           nac_parameters.Nac_parameters.packet_parsing_mode
           nac_parameters.Nac_parameters.match_timestamps
+          nac_parameters.Nac_parameters.build_all_stat
+
           nac_parameters.Nac_parameters.export_values_attributes
 
           xml_attribute_building_mode

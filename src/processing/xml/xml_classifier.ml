@@ -88,8 +88,10 @@ let map_to_anomaly_data
 
   let slice_list = anomaly.Admd.Instantiation.Base.Anomaly.slice_list in
 
-  let start_time = anomaly.Admd.Instantiation.Base.Anomaly.start_time in
-  let end_time = anomaly.Admd.Instantiation.Base.Anomaly.end_time in
+  let start_sec = anomaly.Admd.Instantiation.Base.Anomaly.start_sec in
+  let start_usec = anomaly.Admd.Instantiation.Base.Anomaly.start_usec in
+  let stop_sec = anomaly.Admd.Instantiation.Base.Anomaly.stop_sec in
+  let stop_usec = anomaly.Admd.Instantiation.Base.Anomaly.stop_usec in
 
   Anomaly_data.new_t
     anomaly_type
@@ -106,8 +108,10 @@ let map_to_anomaly_data
 
     slice_list
 
-    start_time
-    end_time
+    start_sec
+    start_usec
+    stop_sec
+    stop_usec
         
 
 
@@ -119,6 +123,7 @@ let process
 
     packet_parsing_mode
     match_timestamps
+    build_all_stat
 
     export_metrics_attributes
 
@@ -135,6 +140,7 @@ let process
     let feature_array = Array.map (fun (indice , name) -> Feature.new_t indice name) indice_name_tuple_array in
     let value_feature_container = Feature_container.new_t feature_array in
 
+    debug "process: reading taxonomy";
     let anomaly_taxonomy = 
       Anomaly_taxonomy.of_string_tuple_ptree
         attribute_feature_container
@@ -143,7 +149,6 @@ let process
     in
 
     debug "process: verifying taxonomy";
-
     if Taxonomy_verifier.verify_taxonomy anomaly_taxonomy = false then
       (
         print_endline "Xml_classifier: process: invalid taxonomy";
@@ -216,10 +221,10 @@ let process
               xml_file_path
           in
 
-          let filter_criteria_list =
-            Filter_criteria_extractor.of_anomaly_container
-              anomaly_container
-          in
+          (* let filter_criteria_list = *)
+          (*   Filter_criteria_extractor.of_anomaly_container *)
+          (*     anomaly_container *)
+          (* in *)
 
           let anomaly_slice_time_data_container =
             Anomaly_slice_time_data_container.of_anomaly_container
@@ -232,11 +237,12 @@ let process
 
               packet_parsing_mode
               match_timestamps
+              build_all_stat              
 
               trace_file_path
 
-              filter_criteria_list
-              anomaly_container
+              (* filter_criteria_list *)
+              (* anomaly_container *)
               anomaly_slice_time_data_container
           in
 
@@ -354,19 +360,19 @@ let process
               notice_xml_file_path
           in
 
-          let anomalous_suspicious_filter_criteria_list =
-            Filter_criteria_extractor.of_anomaly_container
-              anomalous_suspicious_anomaly_container
-          in
-          let notice_filter_criteria_list =
-            Filter_criteria_extractor.of_anomaly_container
-              notice_anomaly_container
-          in
-          let filter_criteria_list =
-            L.sort_unique 
-              Admd.Filter_criteria.compare 
-              (L.append anomalous_suspicious_filter_criteria_list notice_filter_criteria_list)
-          in
+          (* let anomalous_suspicious_filter_criteria_list = *)
+          (*   Filter_criteria_extractor.of_anomaly_container *)
+          (*     anomalous_suspicious_anomaly_container *)
+          (* in *)
+          (* let notice_filter_criteria_list = *)
+          (*   Filter_criteria_extractor.of_anomaly_container *)
+          (*     notice_anomaly_container *)
+          (* in *)
+          (* let filter_criteria_list = *)
+          (*   L.sort_unique  *)
+          (*     Admd.Filter_criteria.compare  *)
+          (*     (L.append anomalous_suspicious_filter_criteria_list notice_filter_criteria_list) *)
+          (* in *)
 
           (* print_endline "Xml_classifier: process: reading trace"; *)
           (* let *)
@@ -435,12 +441,13 @@ let process
 
               packet_parsing_mode
               match_timestamps
+              build_all_stat
 
               trace_file_path
 
-              filter_criteria_list
+              (* filter_criteria_list *)
+              (* () *)
               (* anomaly_container *)
-              ()
               anomaly_slice_time_data_container
           in
 
@@ -467,8 +474,8 @@ let process
                    Anomaly_slice_time_data_container.get_admd_indice
                      anomaly_slice_time_data_container
                      indice
-                in
-                admd_indice, data
+                 in
+                 admd_indice, data
               )
               anomalous_suspicious_l
           in
@@ -479,8 +486,8 @@ let process
                    Anomaly_slice_time_data_container.get_admd_indice
                      anomaly_slice_time_data_container
                      indice
-                in
-                admd_indice, data
+                 in
+                 admd_indice, data
               )
               notice_l
           in

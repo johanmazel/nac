@@ -438,8 +438,8 @@ let process
            let slice =  Admd.Slice.new_t [ filter ] (Some 0) (Some 0) in
            let slice_list = [ slice ] in
 
-           let start_time = detailed_metrics.Detailed_metrics.timestamp_sec_start in
-           let end_time = (detailed_metrics.Detailed_metrics.timestamp_sec_end + 1) in
+           let start_sec = detailed_metrics.Detailed_metrics.timestamp_sec_start in
+           let stop_sec = (detailed_metrics.Detailed_metrics.timestamp_sec_end + 1) in
 
            Anomaly_data.new_t
              (* date *)
@@ -460,8 +460,10 @@ let process
 
              slice_list
 
-             start_time
-             end_time
+             start_sec
+             0
+             stop_sec
+             0
         )
         key_aggr_anomaly_data_signature_tuple_list
     in

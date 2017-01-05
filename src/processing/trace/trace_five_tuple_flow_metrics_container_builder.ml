@@ -32,7 +32,7 @@ let debug fmt =
   Printf.kprintf
     (
       if !debug_enabled then
-  (fun s -> Format.printf "[Trace_five_tuple_flow_builder]: %s@." s)
+  (fun s -> Format.printf "[Trace_five_tuple_flow_metrics_container_builder]: %s@." s)
       else
   ignore
     )

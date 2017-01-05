@@ -11,12 +11,18 @@ Executable      Anomaly_Classication
         MainIs:                 nac.ml
         CompiledObject:         native
         BuildDepends:           itv-tree,
+
+                                ppx_compare,
+                                ppx_sexp_conv,
+                                ppx_bin_prot,
+
                                 admd,
 
                                 netralys_trace_parsing,netralys_packet_data,netralys_flow,
                                 netralys_metrics,netralys_attribute_value,
 
                                 nac_lib, nac_taxonomy
+
 
         BuildTools:             ocamlbuild
         NativeOpt:              -S -inline 20 -nodynlink

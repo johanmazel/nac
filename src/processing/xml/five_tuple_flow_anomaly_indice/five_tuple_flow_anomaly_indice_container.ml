@@ -20,7 +20,7 @@ let debug fmt =
     )
     fmt
 
-(* TODO: split in two HT: 5tp -> int_set & int -> itv-tree because add would only modify a single itv-tree (the one for the considered anomaly indice) *)
+(* TODO: split in two HT: 5tp -> int_set and int -> itv-tree because add would only modify a single itv-tree (the one for the considered anomaly indice) *)
 type t =
   {
     h : (Five_tuple_flow.t, ((float * float * int) list * int Interval_tree.t)) HT.t;
