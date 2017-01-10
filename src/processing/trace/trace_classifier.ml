@@ -24,12 +24,12 @@ let debug fmt =
 
 let process
     parallelization_mode
+    packet_parsing_mode
+    check_five_tuple_flow_metrics_timestamp
+    
+    export_metrics_attributes
 
     taxonomy_filepath
-
-    packet_parsing_mode
-
-    export_metrics_attributes
 
     trace_file_path
   =
@@ -143,6 +143,7 @@ let process
           Five_tuple_flow_metrics_container.map_to_hashtbl
             (fun five_tuple_flow five_tuple_flow_metrics ->
                Detailed_metrics.of_five_tuple_flow_metrics
+                 ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                  five_tuple_flow 
                  five_tuple_flow_metrics
             )

@@ -119,13 +119,13 @@ let map_to_anomaly_data
 let process
     parallelization_mode
 
-    taxonomy_filepath
-
     packet_parsing_mode
     match_timestamps
     build_all_stat
-
+    check_five_tuple_flow_metrics_timestamp
     export_metrics_attributes
+
+    taxonomy_filepath
 
     xml_attribute_classification_mode
   =
@@ -238,7 +238,8 @@ let process
               packet_parsing_mode
               match_timestamps
               build_all_stat              
-
+              check_five_tuple_flow_metrics_timestamp
+              
               trace_file_path
 
               (* filter_criteria_list *)
@@ -442,7 +443,8 @@ let process
               packet_parsing_mode
               match_timestamps
               build_all_stat
-
+              check_five_tuple_flow_metrics_timestamp
+              
               trace_file_path
 
               (* filter_criteria_list *)

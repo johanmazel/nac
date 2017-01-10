@@ -6,7 +6,7 @@ module HT = Hashtbl_ext
   
 open Set_ext_instantiations
     
-open Traffic_flow_aggr_data_instantiations.Traffic_flow_five_tuple_flow_detailed_metrics_aggr_data
+(* open Traffic_flow_aggr_data_instantiations.Traffic_flow_five_tuple_flow_detailed_metrics_aggr_data *)
 
 let debug_enabled = ref true
 

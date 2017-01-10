@@ -65,6 +65,20 @@ let _ =
       nac_parameters.Nac_parameters.match_timestamps <- false
   in
 
+  let dcft_flag =
+    Core.Std.Command.Spec.flag
+      "-dcft"
+      Core.Std.Command.Spec.no_arg
+      ~doc: " do not check five tuple flow timestamp (i.e. do not check if five tuple flow with more than 1 packet have duration > 0)"
+  in
+  let process_dcft_flag dcft =
+    match dcft with
+    | true ->
+      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- false
+    | false ->
+      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- true
+  in
+  
   let atf_flag =
     Core.Std.Command.Spec.flag
       "-atf"
@@ -97,19 +111,21 @@ let _ =
     Core.Std.Command.basic
       ~summary: "Classify anomaly directly from trace"
       Core.Std.Command.Spec.(
-        empty
-        +> ppm_flag
-        +> das_flag
-        +> t_flag
+        empty    
         +> p_flag
+        +> ppm_flag
+        +> t_flag
+        +> dcft_flag
+        +> das_flag
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
       )
-      (fun use_string das t use_int taxonomy_path trace_path () ->
-         process_ppm_flag use_string;
-         process_das_flag das;
-         process_t_flag t;
+      (fun use_int use_string t dcft das taxonomy_path trace_path () ->
          process_p_flag use_int;
+         process_ppm_flag use_string;
+         process_t_flag t;
+         process_dcft_flag dcft;
+         process_das_flag das;
 
          nac_parameters.Nac_parameters.taxonomy_filepath <- taxonomy_path;
 
@@ -218,25 +234,25 @@ let _ =
         Xml_classifier.process
           nac_parameters.Nac_parameters.parallelization_mode
 
-          nac_parameters.Nac_parameters.taxonomy_filepath
-
           nac_parameters.Nac_parameters.packet_parsing_mode
           nac_parameters.Nac_parameters.match_timestamps
           nac_parameters.Nac_parameters.build_all_stat
-
+          nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp          
           nac_parameters.Nac_parameters.export_values_attributes
+
+          nac_parameters.Nac_parameters.taxonomy_filepath
 
           xml_attribute_building_mode
         ;
       )
     | Classification_mode.Trace trace_file_path ->
       Trace_classifier.process
-        nac_parameters.Nac_parameters.parallelization_mode
-
-        nac_parameters.Nac_parameters.taxonomy_filepath
-
+        nac_parameters.Nac_parameters.parallelization_mode        
         nac_parameters.Nac_parameters.packet_parsing_mode
+        nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp        
         nac_parameters.Nac_parameters.export_values_attributes
+        
+        nac_parameters.Nac_parameters.taxonomy_filepath
 
         trace_file_path
   );

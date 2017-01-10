@@ -75,9 +75,10 @@ let process_no_timestamp__
 
 let process_parsing_anomaly_traffic
     parallelization_mode
-    match_timestamps
-
     packet_parsing_mode
+    match_timestamps
+    check_five_tuple_flow_metrics_timestamp
+    
     trace_file_path
 
     (* anomaly_container_ *)
@@ -148,7 +149,8 @@ let process_parsing_anomaly_traffic
 
     let anomaly_detailed_metrics_container =
       Anomaly_detailed_metrics_container.of_anomaly_five_tuple_flow_metrics_container
-        (* anomaly_container_ *)
+        check_five_tuple_flow_metrics_timestamp
+        
         anomaly_slice_time_data_container
 
         anomaly_five_tuple_flow_metrics_container
@@ -263,7 +265,8 @@ let process
     packet_parsing_mode
     match_timestamps
     build_all_stat
-
+    check_five_tuple_flow_metrics_timestamp
+    
     trace_file_path
 
     (* filter_criteria_list *)
@@ -298,10 +301,10 @@ let process
       else
         process_parsing_anomaly_traffic
           parallelization_mode
-          match_timestamps
-          (* parallelization_mode *)
-
           packet_parsing_mode
+          match_timestamps
+          check_five_tuple_flow_metrics_timestamp
+
           trace_file_path
 
           (* anomaly_container *)

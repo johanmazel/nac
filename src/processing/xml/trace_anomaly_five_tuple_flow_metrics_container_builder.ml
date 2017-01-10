@@ -14,9 +14,9 @@ module Five_tuple_flow_set = struct
   let to_string
       ?sep: (sep = " ")
       t
-      =
+    =
     let list = elements t in
-    
+
     List_ext.to_string
       ~sep
       (fun value  -> Five_tuple_flow.to_string value)

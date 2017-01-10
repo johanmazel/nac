@@ -1026,8 +1026,8 @@ let of_anomaly_container_five_tuple_flow_metrics_container
   )
 
 let of_anomaly_five_tuple_flow_metrics_container
-
-    (* anomaly_container *)
+    check_five_tuple_flow_metrics_timestamp
+    
     anomaly_slice_time_data_container
     
     anomaly_five_tuple_flow_metrics_container
@@ -1062,12 +1062,13 @@ let of_anomaly_five_tuple_flow_metrics_container
              L.length five_tuple_flow_l
            );
 
-           let first_tuple = L.hd l in
+           let five_tuple_flow, five_tuple_flow_metrics = L.hd l in
            (* let first_five_tuple_flow_metrics = L.hd five_tuple_flow_metrics_list in *)
            let first_detailed_metrics : Detailed_metrics.t =
              Detailed_metrics.of_five_tuple_flow_metrics
-               (fst first_tuple)
-               (snd first_tuple)
+               ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
+               five_tuple_flow
+               five_tuple_flow_metrics
            in
 
            let detailed_metrics =
