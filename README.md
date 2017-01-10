@@ -74,7 +74,7 @@ ctx mode: classify anomalies annotated in an xml file and located in a network t
 * admd.xml: a XML file that describes occurring anomalies (http://admd.sourceforge.net/)
 
 ```unix
-./nac.native -ctx taxonomy_v1.23/anomaly_taxonomy trace.dump admd.xml
+./nac.native ctx taxonomy_v1.23/anomaly_taxonomy trace.dump admd.xml
 ```
 
 ### Trace and MAWILab XML
@@ -87,7 +87,7 @@ ctmx mode: classify anomalies annotated in a "anomalous/suspicious" xml file and
 * notice_admd.xml
 
 ```unix
-./nac.native -ctmx taxonomy_v1.23/anomaly_taxonomy trace.dump anomalous_suspicious_admd.xml notice_admd.xml
+./nac.native ctmx taxonomy_v1.23/anomaly_taxonomy trace.dump anomalous_suspicious_admd.xml notice_admd.xml
 ```
 
 
@@ -99,7 +99,7 @@ ct mode: classify anomalies in a network trace using:
 * trace.dump
 
 ```unix
-./nac.native -ctmx taxonomy_v1.23/anomaly_taxonomy trace.dump
+./nac.native ctmx taxonomy_v1.23/anomaly_taxonomy trace.dump
 ```
 
 
