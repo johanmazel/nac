@@ -1039,8 +1039,6 @@ let of_anomaly_five_tuple_flow_metrics_container
   (
     debug "of_anomaly_five_tuple_flow_metrics_container: call";
 
-    debug "of_anomaly_five_tuple_flow_metrics_container: check_five_tuple_flow_metrics_timestamp: %b" check_five_tuple_flow_metrics_timestamp;
-
     let h =
       Anomaly_five_tuple_flow_metrics_container.map_to_hashtbl
         (fun _ five_tuple_flow_metrics_container ->
