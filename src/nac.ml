@@ -64,20 +64,6 @@ let _ =
     | false ->
       nac_parameters.Nac_parameters.match_timestamps <- false
   in
-
-  let dcft_flag =
-    Core.Std.Command.Spec.flag
-      "-dcft"
-      Core.Std.Command.Spec.no_arg
-      ~doc: " do not check five tuple flow timestamp (i.e. do not check if five tuple flow with more than 1 packet have duration > 0)"
-  in
-  let process_dcft_flag dcft =
-    match dcft with
-    | true ->
-      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- false
-    | false ->
-      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- true
-  in
   
   let atf_flag =
     Core.Std.Command.Spec.flag
@@ -107,6 +93,20 @@ let _ =
       nac_parameters.Nac_parameters.export_values_attributes <- false
   in
 
+  let dcft_flag =
+    Core.Std.Command.Spec.flag
+      "-dcft"
+      Core.Std.Command.Spec.no_arg
+      ~doc: " do not check five tuple flow timestamp (i.e. do not check if five tuple flow with more than 1 packet have duration > 0)"
+  in
+  let process_dcft_flag dcft =
+    match dcft with
+    | true ->
+      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- false
+    | false ->
+      nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- true
+  in
+
   let ct =
     Core.Std.Command.basic
       ~summary: "Classify anomaly directly from trace"
@@ -120,9 +120,9 @@ let _ =
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
       )
-      (fun use_int use_string t dcft das taxonomy_path trace_path () ->
-         process_p_flag use_int;
-         process_ppm_flag use_string;
+      (fun p ppm t dcft das taxonomy_path trace_path () ->
+         process_p_flag p;
+         process_ppm_flag ppm;
          process_t_flag t;
          process_dcft_flag dcft;
          process_das_flag das;
@@ -143,16 +143,18 @@ let _ =
         +> ppm_flag
         +> t_flag
         +> atf_flag
+        +> dcft_flag
         +> das_flag
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
         +> anon ("xml_path" %: string)
       )
-      (fun p ppm t atf das taxonomy_path trace_path xml_path () ->
+      (fun p ppm t atf dcft das taxonomy_path trace_path xml_path () ->
          process_p_flag p;
          process_ppm_flag ppm;
          process_t_flag t;
          process_atf_flag atf;
+         process_dcft_flag dcft;
          process_das_flag das;
 
          nac_parameters.Nac_parameters.taxonomy_filepath <- taxonomy_path;
@@ -172,17 +174,19 @@ let _ =
         +> ppm_flag
         +> t_flag
         +> atf_flag
+        +> dcft_flag
         +> das_flag
         +> anon ("taxonomy_path" %: string)
         +> anon ("trace_path" %: string)
         +> anon ("mawilab_xml_anomalous_suspicious_path" %: string)
         +> anon ("mawilab_xml_notice_path" %: string)
       )
-      (fun p ppm t atf das taxonomy_path trace_path mawilab_xml_anomalous_suspicious_path mawilab_xml_notice_path () ->
+      (fun p ppm t atf dcft das taxonomy_path trace_path mawilab_xml_anomalous_suspicious_path mawilab_xml_notice_path () ->
          process_p_flag p;
          process_ppm_flag ppm;
          process_t_flag t;
          process_atf_flag atf;
+         process_dcft_flag dcft;
          process_das_flag das;
 
          nac_parameters.Nac_parameters.taxonomy_filepath <- taxonomy_path;
