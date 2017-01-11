@@ -138,9 +138,7 @@ let to_list_anomaly_metric t =
      
 let of_hashtables
     get_five_tuple_flow_metric_f
-    (* five_tuple_flow_count_hashtable________ *)
-
-    (* anomaly_container__ *)
+    
     anomaly_slice_time_data_container
 
     five_tuple_flow_set_detailed_metrics_tuple_hashtable
@@ -251,8 +249,6 @@ let of_hashtables
            Five_tuple_flow_data_structures.Five_tuple_flow_hashset.fold
              (fun five_tuple_flow (packet_number_acc, byte_number_acc) ->
                 let five_tuple_flow_metrics =
-                  (* Five_tuple_flow_metrics_container.find *)
-                  (* five_tuple_flow_metrics_container *)
                   get_five_tuple_flow_metric_f
                     indice
                     five_tuple_flow
@@ -1042,6 +1038,8 @@ let of_anomaly_five_tuple_flow_metrics_container
   =
   (
     debug "of_anomaly_five_tuple_flow_metrics_container: call";
+
+    debug "of_anomaly_five_tuple_flow_metrics_container: check_five_tuple_flow_metrics_timestamp: %b" check_five_tuple_flow_metrics_timestamp;
 
     let h =
       Anomaly_five_tuple_flow_metrics_container.map_to_hashtbl

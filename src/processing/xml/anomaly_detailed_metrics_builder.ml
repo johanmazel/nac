@@ -85,7 +85,6 @@ let process_parsing_anomaly_traffic
     
     trace_file_path
 
-    (* anomaly_container_ *)
     anomaly_slice_time_data_container
   =
   (
@@ -161,7 +160,6 @@ let process_parsing_anomaly_traffic
     in
 
     if
-      (* Base.Anomaly_container.length anomaly_container *)
       (Anomaly_slice_time_data_container.length anomaly_slice_time_data_container)
       <>
       Anomaly_detailed_metrics_container.length anomaly_detailed_metrics_container
