@@ -79,20 +79,6 @@ let _ =
       nac_parameters.Nac_parameters.build_all_stat <- false
   in
 
-  let das_flag =
-    Core.Std.Command.Spec.flag
-      "-das"
-      Core.Std.Command.Spec.no_arg
-      ~doc: " export values and attributes of anomalies"
-  in
-  let process_das_flag das =
-    match das with
-    | true ->
-      nac_parameters.Nac_parameters.export_values_attributes <- true
-    | false ->
-      nac_parameters.Nac_parameters.export_values_attributes <- false
-  in
-
   let dcft_flag =
     Core.Std.Command.Spec.flag
       "-dcft"
@@ -105,6 +91,20 @@ let _ =
       nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- false
     | false ->
       nac_parameters.Nac_parameters.check_five_tuple_flow_metrics_timestamp <- true
+  in
+
+  let das_flag =
+    Core.Std.Command.Spec.flag
+      "-das"
+      Core.Std.Command.Spec.no_arg
+      ~doc: " export values and attributes of anomalies"
+  in
+  let process_das_flag das =
+    match das with
+    | true ->
+      nac_parameters.Nac_parameters.export_values_attributes <- true
+    | false ->
+      nac_parameters.Nac_parameters.export_values_attributes <- false
   in
 
   let ct =

@@ -34,6 +34,8 @@ let process_no_timestamp__
     parallelization_mode
 
     packet_parsing_mode
+    check_five_tuple_flow_metrics_timestamp
+    
     trace_file_path
 
     anomaly_container
@@ -56,6 +58,8 @@ let process_no_timestamp__
     let anomaly_detailed_metrics_container =
       Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container
         parallelization_mode
+
+        check_five_tuple_flow_metrics_timestamp
 
         five_tuple_flow_metrics_container
         five_tuple_key_five_tuple_flow_set_container
@@ -188,6 +192,8 @@ let process_parsing_all_traffic
 
     packet_parsing_mode
     match_timestamps
+    check_five_tuple_flow_metrics_timestamp
+    
     trace_file_path
 
     (* anomaly_container *)
@@ -224,11 +230,11 @@ let process_parsing_all_traffic
     let anomaly_detailed_metrics_container =
       Anomaly_detailed_metrics_container.of_anomaly_container_five_tuple_flow_metrics_container
         parallelization_mode
-
+        check_five_tuple_flow_metrics_timestamp
+        
         five_tuple_flow_metrics_container
         five_tuple_key_five_tuple_flow_set_container
 
-        (* anomaly_container *)
         anomaly_slice_time_data_container
     in
 
@@ -269,23 +275,10 @@ let process
     
     trace_file_path
 
-    (* filter_criteria_list *)
-    (* anomaly_container *)
     anomaly_slice_time_data_container
   =
   (
     debug "process: call";
-
-    (* let trace_statistics, anomaly_detailed_metrics_container = *)
-    (*   process_no_timestamp *)
-    (*     false *)
-
-    (*     packet_parsing_mode *)
-    (*     trace_file_path *)
-
-    (*     anomaly_container *)
-    (*     filter_criteria_list *)
-    (* in *)
 
     let trace_statistics, anomaly_detailed_metrics_container =
       if build_all_stat then
@@ -294,20 +287,21 @@ let process
 
           packet_parsing_mode
           match_timestamps
+          check_five_tuple_flow_metrics_timestamp
+          
           trace_file_path
 
-          (* anomaly_container *)
           anomaly_slice_time_data_container          
       else
         process_parsing_anomaly_traffic
           parallelization_mode
+          
           packet_parsing_mode
           match_timestamps
           check_five_tuple_flow_metrics_timestamp
 
           trace_file_path
 
-          (* anomaly_container *)
           anomaly_slice_time_data_container
     in
 

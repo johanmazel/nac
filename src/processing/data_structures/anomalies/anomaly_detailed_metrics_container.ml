@@ -298,6 +298,8 @@ let of_hashtables
 let of_anomaly_container_five_tuple_flow_metrics_container______old
     parallelization_mode
 
+    check_five_tuple_flow_metrics_timestamp
+    
     five_tuple_flow_metrics_container
     five_tuple_key_five_tuple_flow_set_container
 
@@ -526,6 +528,7 @@ let of_anomaly_container_five_tuple_flow_metrics_container______old
                         in
                         let first_detailed_metrics : Detailed_metrics.t =
                           Detailed_metrics.of_five_tuple_flow_metrics
+                            ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                             first_five_tuple_flow 
                             first_five_tuple_flow_metrics
                         in
@@ -540,6 +543,7 @@ let of_anomaly_container_five_tuple_flow_metrics_container______old
 
                              let detailed_metrics =
                                Detailed_metrics.of_five_tuple_flow_metrics
+                                 ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                                  five_tuple_flow
                                  five_tuple_flow_metrics
                              in
@@ -659,6 +663,8 @@ let of_anomaly_container_five_tuple_flow_metrics_container______old
 let of_anomaly_container_five_tuple_flow_metrics_container
     parallelization_mode
 
+    check_five_tuple_flow_metrics_timestamp
+    
     five_tuple_flow_metrics_container
     five_tuple_key_five_tuple_flow_set_container
 
@@ -893,6 +899,7 @@ let of_anomaly_container_five_tuple_flow_metrics_container
                         in
                         let first_detailed_metrics : Detailed_metrics.t =
                           Detailed_metrics.of_five_tuple_flow_metrics
+                            ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                             first_five_tuple_flow 
                             first_five_tuple_flow_metrics
                         in
@@ -907,6 +914,7 @@ let of_anomaly_container_five_tuple_flow_metrics_container
 
                              let detailed_metrics =
                                Detailed_metrics.of_five_tuple_flow_metrics
+                                 ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                                  five_tuple_flow
                                  five_tuple_flow_metrics
                              in
@@ -1082,6 +1090,7 @@ let of_anomaly_five_tuple_flow_metrics_container
 
                   let detailed_metrics =
                     Detailed_metrics.of_five_tuple_flow_metrics
+                      ~check_five_tuple_flow_metrics_timestamp: check_five_tuple_flow_metrics_timestamp
                       five_tuple_flow
                       five_tuple_flow_metrics
                   in
